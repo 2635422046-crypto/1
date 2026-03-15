@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shopping.trends.mapper.ShoppingRecordMapper">
+
+    <select id="selectByDateRange" resultType="com.shopping.trends.entity.ShoppingRecord">
+        SELECT *
+        FROM shopping_record
+        WHERE purchase_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="selectUserStats" resultType="com.shopping.trends.dto.UserStatsDTO">
+        SELECT 
+            COUNT(DISTINCT user_id) AS activeUserCount,
+            COUNT(*) / COUNT(DISTINCT user_id) AS avgPurchaseFrequency,
+            (
+                SELECT JSON_OBJECTAGG(age_group, cnt)
+                FROM (
+                    SELECT 
+                        CASE 
+                            WHEN age BETWEEN 18 AND 25 THEN '18-25'
+                            WHEN age BETWEEN 26 AND 35 THEN '26-35'
+                            WHEN age BETWEEN 36 AND 45 THEN '36-45'
+                            ELSE '45+'
+                        END AS age_group,
+                        COUNT(DISTINCT user_id) AS cnt
+                    FROM shopping_record
+                    WHERE purchase_date BETWEEN #{startDate} AND #{endDate}
+                    GROUP BY age_group
+                ) t
+            ) AS ageGroupDistribution,
+            (
+                SELECT JSON_OBJECTAGG(gender, cnt)
+                FROM (
+                    SELECT gender, COUNT(DISTINCT user_id) AS cnt
+                    FROM shopping_record
+                    WHERE purchase_date BETWEEN #{startDate} AND #{endDate}
+                    GROUP BY gender
+                ) t
+            ) AS genderDistribution,
+            (
+                SELECT JSON_OBJECTAGG(location, cnt)
+                FROM (
+                    SELECT location, COUNT(DISTINCT user_id) AS cnt
+                    FROM shopping_record
+                    WHERE purchase_date BETWEEN #{startDate} AND #{endDate}
+                    GROUP BY location
+                ) t
+            ) AS locationDistribution
+        FROM shopping_data
+        WHERE purchase_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="selectAll" resultType="com.shopping.trends.entity.ShoppingRecord">
+        SELECT *
+        FROM shopping_data
+    </select>
+
+    <!-- 产品销量趋势查询 -->
+    <select id="selectProductTrendData" resultType="map">
+        SELECT 
+            DATE_FORMAT(date, '%Y-%m-%d') AS date,
+            COUNT(*) AS salesCount
+        FROM shopping_data
+        WHERE date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE_FORMAT(date, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <!-- 产品品类分布查询 -->
+    <select id="selectCategoryDistribution" resultType="map">
+        SELECT 
+            category AS name,
+            COUNT(*) AS value
+        FROM shopping_data
+        GROUP BY category
+    </select>
+
+    <!-- 热销产品排行查询 -->
+    <select id="selectTopProducts" resultType="map">
+        SELECT 
+            item_purchased AS name,
+            COUNT(*) AS value
+        FROM shopping_data
+        GROUP BY item_purchased
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 颜色分布（读 shopping_data.color 列，不修改数据库） -->
+    <select id="selectColorStats" resultType="map">
+        SELECT
+            color AS name,
+            COUNT(*) AS value
+        FROM shopping_data
+        GROUP BY color
+        ORDER BY value DESC
+    </select>
+
+    <!-- 尺码分布（读 shopping_data.size 列，不修改数据库） -->
+    <select id="selectSizeStats" resultType="map">
+        SELECT
+            size AS name,
+            COUNT(*) AS value
+        FROM shopping_data
+        GROUP BY size
+        ORDER BY value DESC
+    </select>
+
+</mapper>
