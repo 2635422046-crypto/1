@@ -102,6 +102,7 @@ import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import apiClient from '@/utils/apiClient';
 import { getCategoryLabel, getSeasonLabel, getItemPurchasedLabel } from '@/utils/displayLabels';
+import { toolboxWithExportLog } from '@/utils/chartToolbox';
 
 const API_BASE = '/api/shopping-records/stats/comprehensive';
 
@@ -180,7 +181,7 @@ async function loadSummaryFrequencyAmount() {
     const list = (res && res.data) ? res.data : [];
     const option = {
       tooltip: { trigger: 'axis' },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('购买频率与金额'),
       xAxis: { type: 'category', data: list.map(d => d.frequency_group) },
       yAxis: [{ type: 'value', name: '客户数' }, { type: 'value', name: '金额' }],
       series: [
@@ -210,7 +211,7 @@ async function loadSummaryPriceSensitivity() {
     const list = (res && res.data) ? res.data : [];
     const option = {
       tooltip: { trigger: 'item' },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('价格敏感度'),
       series: [{ type: 'pie', radius: '60%', data: list.map(d => ({ name: getPriceSensitivityLabel(d.price_sensitivity), value: d.customer_count })) }]
     };
     setOptionWithResize(summaryPriceSensitivityRef, 'summaryPriceSensitivity', option);

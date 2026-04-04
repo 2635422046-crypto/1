@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+import { AUTH_SESSION_KEY } from '@/constants/auth';
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -7,30 +8,28 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json'
   }
-})
+});
 
-// 请求拦截器
+// 请求拦截器：携带管理员会话（与后端 X-Admin-Session 一致）
 apiClient.interceptors.request.use(
-  config => {
-    // 可以在这里添加token等
-    return config
+  (config) => {
+    const token = localStorage.getItem(AUTH_SESSION_KEY);
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers['X-Admin-Session'] = token;
+    }
+    return config;
   },
-  error => {
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);
 
 // 响应拦截器
 apiClient.interceptors.response.use(
-  response => {
-    // 统一处理响应数据
-    return response.data
-  },
-  error => {
-    // 统一处理错误
-    console.error('API Error:', error)
-    return Promise.reject(error)
+  (response) => response.data,
+  (error) => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
   }
-)
+);
 
-export default apiClient
+export default apiClient;

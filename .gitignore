@@ -1,0 +1,22 @@
+# Maven
+target/
+shopping-trends-api/target/
+
+# Node
+node_modules/
+shopping-trends-vue/node_modules/
+/shopping-trends-vue/dist/
+
+# Logs
+logs/
+**/logs/
+*.log
+*.log.*
+
+# Local / IDE (optional noise)
+.specstory/
+.cursorindexingignore
+
+# OS
+.DS_Store
+Thumbs.db

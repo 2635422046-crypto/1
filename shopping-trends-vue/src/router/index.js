@@ -7,8 +7,7 @@ import ProductAnalysis from '../views/ProductAnalysis.vue';
 import ComprehensiveAnalysis from '../views/ComprehensiveAnalysis.vue';
 import Login from '../views/Login.vue';
 import Profile from '../views/Profile.vue';
-
-const AUTH_KEY = 'shopping_trends_admin_id';
+import { AUTH_LOGIN_ID_KEY, AUTH_SESSION_KEY } from '@/constants/auth';
 
 const routes = [
   {
@@ -32,19 +31,19 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: Dashboard,
-        meta: { title: '仪表盘', icon: 'el-icon-menu' }
+        meta: { title: '经营数据概览', icon: 'el-icon-menu' }
       },
       {
         path: 'user-analysis',
         name: 'UserAnalysis',
         component: UserAnalysis,
-        meta: { title: '用户分析', icon: 'el-icon-user' }
+        meta: { title: '客户分析', icon: 'el-icon-user' }
       },
       {
         path: 'product-analysis',
         name: 'ProductAnalysis',
         component: ProductAnalysis,
-        meta: { title: '产品分析', icon: 'el-icon-shopping-cart' }
+        meta: { title: '商品结构分析', icon: 'el-icon-shopping-cart' }
       },
       {
         path: 'comprehensive-analysis',
@@ -56,7 +55,7 @@ const routes = [
         path: 'profile',
         name: 'Profile',
         component: Profile,
-        meta: { title: '个人资料', hidden: true }
+        meta: { title: '管理员账户', hidden: true }
       }
     ]
   }
@@ -68,7 +67,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const loggedIn = !!localStorage.getItem(AUTH_KEY);
+  const loggedIn =
+    !!localStorage.getItem(AUTH_LOGIN_ID_KEY) && !!localStorage.getItem(AUTH_SESSION_KEY);
   if (to.meta.requiresAuth && !loggedIn) {
     next({ path: '/login' });
     return;
@@ -77,7 +77,7 @@ router.beforeEach((to, from, next) => {
     next({ path: '/' });
     return;
   }
-  document.title = to.meta.title ? `${to.meta.title} - 电商交易分析系统` : '电商交易分析系统';
+  document.title = to.meta.title ? `${to.meta.title} - 电商交易数据分析系统` : '电商交易数据分析系统';
   next();
 });
 

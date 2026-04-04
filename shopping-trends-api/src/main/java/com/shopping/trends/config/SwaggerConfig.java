@@ -30,9 +30,9 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("购物趋势分析系统API文档")
-                .description("购物趋势分析系统接口文档")
-                .contact(new Contact("Shopping Trends", "http://www.example.com", "admin@example.com"))
+                .title("电商交易数据分析系统 API")
+                .description("购物记录查询、统计分析、管理员认证等接口文档")
+                .contact(new Contact("Admin", "http://www.example.com", "admin@example.com"))
                 .version("1.0.0")
                 .build();
     }

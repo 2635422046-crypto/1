@@ -76,6 +76,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import apiClient from '@/utils/apiClient';
 import { getCategoryLabel, getItemPurchasedLabel, categoryToZh, itemPurchasedToZh } from '@/utils/displayLabels';
+import { toolboxWithExportLog } from '@/utils/chartToolbox';
 
 // 图表实例
 const categoryChart = ref(null);
@@ -110,7 +111,7 @@ const renderCategoryChart = () => {
       trigger: 'item',
       formatter: '{a} <br/>{b}: {c} ({d}%)'
     },
-    toolbox: { feature: { saveAsImage: {} } },
+    toolbox: toolboxWithExportLog('商品品类分布'),
     legend: {
       orient: 'vertical',
       right: 10,
@@ -161,7 +162,7 @@ const renderItemChart = () => {
       trigger: 'item',
       formatter: '{a} <br/>{b}: {c} ({d}%)'
     },
-    toolbox: { feature: { saveAsImage: {} } },
+    toolbox: toolboxWithExportLog('商品种类分布'),
     legend: {
       orient: 'vertical',
       right: 10,
@@ -204,7 +205,7 @@ const renderColorChart = () => {
   }));
   const option = {
     tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-    toolbox: { feature: { saveAsImage: {} } },
+    toolbox: toolboxWithExportLog('颜色分布'),
     legend: { orient: 'vertical', right: 10, top: 'center', data: data.map(item => item.name) },
     series: [{
       name: '颜色分布',
@@ -238,7 +239,7 @@ const renderSizeChart = () => {
   }));
   const option = {
     tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-    toolbox: { feature: { saveAsImage: {} } },
+    toolbox: toolboxWithExportLog('尺码分布'),
     legend: { orient: 'vertical', right: 10, top: 'center', data: data.map(item => item.name) },
     series: [{
       name: '尺码分布',

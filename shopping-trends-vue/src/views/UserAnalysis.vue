@@ -167,6 +167,7 @@ import * as echarts from 'echarts';
 // 统一使用 apiClient，baseURL 已配置，无需在每个请求中拼写 http://localhost:8080
 import apiClient from '@/utils/apiClient';
 import { getLocationLabel, getGenderLabel } from '@/utils/displayLabels';
+import { toolboxWithExportLog } from '@/utils/chartToolbox';
 
 // 全局状态
 const globalLoading = ref(false);
@@ -389,7 +390,7 @@ const loadAgeDistribution = async () => {
           `;
         }
       },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('客户年龄分布'),
       grid: {
         top: '20%',
         left: '3%',
@@ -489,7 +490,7 @@ const loadGenderDistribution = async () => {
           `;
         }
       },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('客户性别分布'),
       legend: {
         orient: 'vertical',
         right: 10,
@@ -585,7 +586,7 @@ const loadFrequencyDistribution = async () => {
           `;
         }
       },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('客户购买频率分布'),
       xAxis: {
         type: 'category',
         data: monthlyData.map(item => item.month),
@@ -654,7 +655,7 @@ const loadLocationDistribution = async () => {
           `;
         }
       },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('客户地区分布'),
       legend: {
         type: 'scroll',
         orient: 'vertical',
@@ -734,7 +735,7 @@ const loadPurchaseTrend = async () => {
       tooltip: {
         trigger: 'axis'
       },
-      toolbox: { feature: { saveAsImage: {} } },
+      toolbox: toolboxWithExportLog('客户购买趋势'),
       xAxis: {
         type: 'category',
         data: trendList.map(item => item.date),

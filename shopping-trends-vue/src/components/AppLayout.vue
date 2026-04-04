@@ -38,7 +38,7 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="router.push('/profile')">个人资料</el-dropdown-item>
+                <el-dropdown-item @click="router.push('/profile')">管理员账户管理</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -58,7 +58,7 @@
       <!-- 页脚 -->
       <el-footer class="footer">
         <div class="footer-content">
-          <span>电商交易分析系统 &copy; {{ currentYear }}</span>
+          <span>电商交易数据分析系统 &copy; {{ currentYear }}</span>
           <span>版本 v1.0.0</span>
         </div>
       </el-footer>
@@ -69,6 +69,8 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import apiClient from '@/utils/apiClient';
+import { AUTH_LOGIN_ID_KEY, AUTH_SESSION_KEY } from '@/constants/auth';
 
 const router = useRouter();
 const route = useRoute();
@@ -99,9 +101,18 @@ const currentRoute = computed(() => {
   return route;
 });
 
-// 退出登录
-const handleLogout = () => {
-  localStorage.removeItem('shopping_trends_admin_id');
+// 退出登录（通知后端作废会话，操作日志记「退出」）
+const handleLogout = async () => {
+  const token = localStorage.getItem(AUTH_SESSION_KEY);
+  if (token) {
+    try {
+      await apiClient.post('/api/admin/logout');
+    } catch {
+      /* 仍清除本地态 */
+    }
+  }
+  localStorage.removeItem(AUTH_LOGIN_ID_KEY);
+  localStorage.removeItem(AUTH_SESSION_KEY);
   router.push('/login');
 };
 </script>

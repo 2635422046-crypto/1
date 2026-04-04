@@ -23,4 +23,9 @@ public interface AdminService {
      * @return true 成功
      */
     boolean deregister(String loginId, String password);
+
+    /**
+     * 校验账号密码是否匹配 admins.txt 中的记录。
+     */
+    boolean verifyPassword(String loginId, String password);
 }

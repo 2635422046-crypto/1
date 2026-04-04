@@ -21,7 +21,7 @@ import com.shopping.trends.exception.BusinessException;
 import com.shopping.trends.util.ShoppingDataNormalizer;
 
 /**
- * 用户统计服务实现：从 shopping_data 表读取数据，
+ * 客户统计服务实现：从 shopping_data 表读取数据，
  * 在内存中完成聚合计算（活跃用户数、购买频率、年龄/性别/地区分布等），
  * 全部为只读操作，不修改数据库。
  */
@@ -52,6 +52,7 @@ public class UserStatsServiceImpl implements UserStatsService {
         Map<String, Object> result = new HashMap<>();
         result.put("activeUserCount", stats.getActiveUserCount());
         result.put("avgPurchaseFrequency", stats.getAvgPurchaseFrequency());
+
         // 各分布字段若为 null 则返回空 Map，防止前端解析报错
         result.put("ageGroupDistribution",  stats.getAgeGroupDistribution()  != null ? stats.getAgeGroupDistribution()  : Collections.emptyMap());
         result.put("genderDistribution",    stats.getGenderDistribution()    != null ? stats.getGenderDistribution()    : Collections.emptyMap());

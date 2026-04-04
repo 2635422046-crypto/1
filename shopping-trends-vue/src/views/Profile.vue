@@ -2,7 +2,7 @@
   <div class="profile-page">
     <el-card class="profile-card">
       <template #header>
-        <span class="card-title">个人资料</span>
+        <span class="card-title">管理员账户管理</span>
       </template>
       <div class="sections">
         <div class="section">
@@ -64,6 +64,24 @@
             注销
           </el-button>
         </div>
+        <div class="section">
+          <h3>操作日志</h3>
+          <p class="tip">记录登录、退出、修改密码、图表下载功能。</p>
+          <el-button type="default" size="small" :loading="logsLoading" @click="loadOperationLogs">刷新</el-button>
+          <el-table
+            v-loading="logsLoading"
+            :data="operationLogs"
+            stripe
+            class="log-table"
+            max-height="360"
+            empty-text="暂无记录"
+          >
+            <el-table-column prop="time" label="时间" width="170" />
+            <el-table-column prop="action" label="操作" width="140" />
+            <el-table-column prop="ip" label="IP" width="130" />
+            <el-table-column prop="detail" label="详情" min-width="200" show-overflow-tooltip />
+          </el-table>
+        </div>
       </div>
     </el-card>
   </div>
@@ -74,14 +92,29 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import apiClient from '@/utils/apiClient';
+import { AUTH_LOGIN_ID_KEY, AUTH_SESSION_KEY } from '@/constants/auth';
 
-const AUTH_KEY = 'shopping_trends_admin_id';
 const router = useRouter();
 const pwdFormRef = ref(null);
 const pwdLoading = ref(false);
 const deregisterLoading = ref(false);
 
-const loginId = computed(() => localStorage.getItem(AUTH_KEY) || '');
+const loginId = computed(() => localStorage.getItem(AUTH_LOGIN_ID_KEY) || '');
+
+const logsLoading = ref(false);
+const operationLogs = ref([]);
+
+async function loadOperationLogs() {
+  logsLoading.value = true;
+  try {
+    const res = await apiClient.get('/api/admin/operation-logs', { params: { limit: 120 } });
+    operationLogs.value = Array.isArray(res?.data) ? res.data : [];
+  } catch {
+    operationLogs.value = [];
+  } finally {
+    logsLoading.value = false;
+  }
+}
 
 const pwdForm = reactive({
   oldPassword: '',
@@ -123,6 +156,7 @@ async function handleChangePassword() {
         pwdForm.newPassword = '';
         pwdForm.confirmPassword = '';
         pwdFormRef.value?.resetFields();
+        await loadOperationLogs();
       } else {
         ElMessage.error(res?.message || '修改失败');
       }
@@ -138,7 +172,7 @@ async function handleChangePassword() {
 async function handleDeregister() {
   try {
     await ElMessageBox.confirm(
-      '注销后将从电商交易分析系统中删除该账号，确定要注销吗？',
+      '注销后将从电商交易数据分析系统中删除该账号，确定要注销吗？',
       '确认注销',
       {
         confirmButtonText: '确定',
@@ -164,7 +198,8 @@ async function handleDeregister() {
       password: pwd.value.trim()
     });
     if (res && res.success) {
-      localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(AUTH_LOGIN_ID_KEY);
+      localStorage.removeItem(AUTH_SESSION_KEY);
       ElMessage.success('已注销');
       router.replace('/login');
     } else {
@@ -179,7 +214,11 @@ async function handleDeregister() {
 }
 
 onMounted(() => {
-  if (!loginId.value) router.replace('/login');
+  if (!loginId.value || !localStorage.getItem(AUTH_SESSION_KEY)) {
+    router.replace('/login');
+    return;
+  }
+  loadOperationLogs();
 });
 </script>
 
@@ -254,5 +293,10 @@ onMounted(() => {
   font-size: 15px;
   color: #606266;
   line-height: 1.6;
+}
+
+.log-table {
+  margin-top: 12px;
+  width: 100%;
 }
 </style>

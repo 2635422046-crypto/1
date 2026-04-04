@@ -116,6 +116,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import * as echarts from 'echarts';
 // 统一使用 apiClient（baseURL 已配置为 http://localhost:8080，带响应拦截器）
 import apiClient from '@/utils/apiClient';
+import { toolboxWithExportLog } from '@/utils/chartToolbox';
 import WordCloudChart from './WordCloudChart.vue';
 import { Money, ShoppingCart, User, DataAnalysis, Refresh } from '@element-plus/icons-vue';
 import { getCategoryLabel, getLocationLabel, getGenderLabel, getSeasonLabel } from '@/utils/displayLabels';
@@ -268,11 +269,7 @@ const loadChartData = async (index) => {
       tooltip: { trigger: 'axis' },
       grid: { left: '3%', right: '4%', bottom: gridBottom, containLabel: true },
       legend: { orient: 'horizontal', bottom: 0 },
-      toolbox: {
-        feature: {
-          saveAsImage: {}
-        }
-      },
+      toolbox: toolboxWithExportLog(chart.title),
       xAxis: chart.type !== 'pie' ? { 
         type: 'category',
         data: displayData.map(item => item._displayLabel),
