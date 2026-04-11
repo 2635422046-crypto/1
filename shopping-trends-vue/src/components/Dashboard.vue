@@ -5,7 +5,7 @@
         <el-card shadow="hover" class="welcome-card">
           <template #header>
             <div class="card-header">
-              <h2>电商交易数据分析仪表盘</h2>
+              <h2>经营数据概览</h2>
             </div>
           </template>
           <div class="welcome-content">
@@ -84,6 +84,74 @@
       </el-col>
     </el-row>
 
+    <!-- 交易记录分页列表 -->
+    <el-row :gutter="20" class="chart-row">
+      <el-col :span="24">
+        <el-card shadow="hover" class="table-card">
+          <template #header>
+            <div class="card-header">
+              <h3>交易记录分页列表</h3>
+              <el-button v-if="transactionTable.loading" :loading="true" circle size="small"></el-button>
+              <el-button v-else type="primary" size="small" @click="loadTransactionRecords">
+                <el-icon><Refresh /></el-icon>
+                刷新
+              </el-button>
+            </div>
+          </template>
+          <div v-loading="transactionTable.loading" class="table-container">
+            <div v-if="transactionTable.error" class="chart-error">
+              <el-empty description="加载数据失败">
+                <el-button type="primary" @click="loadTransactionRecords">重试</el-button>
+              </el-empty>
+            </div>
+            <el-table v-else :data="transactionTable.data" stripe border style="width: 100%" size="small">
+              <el-table-column prop="date" label="日期" :formatter="formatDate" />
+              <el-table-column prop="customerId" label="客户编号" />
+              <el-table-column prop="gender" label="性别">
+                <template #default="scope">
+                  {{ getGenderLabel(scope.row.gender) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="age" label="年龄" />
+              <el-table-column prop="item" label="商品名称" show-overflow-tooltip>
+                <template #default="scope">
+                  {{ getItemPurchasedLabel(scope.row.item) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="category" label="商品品类">
+                <template #default="scope">
+                  {{ getCategoryLabel(scope.row.category) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="purchaseAmount" label="购买金额(元)" :formatter="formatAmount" />
+              <el-table-column prop="location" label="地区">
+                <template #default="scope">
+                  {{ getLocationLabel(scope.row.location) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="season" label="季节">
+                <template #default="scope">
+                  {{ getSeasonLabel(scope.row.season) }}
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 分页控件 -->
+            <div class="pagination-container">
+              <el-pagination
+                v-model:current-page="transactionTable.pageNum"
+                v-model:page-size="transactionTable.pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="transactionTable.total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handlePageChange"
+              />
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 图表网格 -->
     <el-row :gutter="20" class="chart-row">
       <el-col v-for="(chart, index) in charts" :key="index" :xs="24" :sm="24" :md="12" :lg="8">
@@ -119,7 +187,68 @@ import apiClient from '@/utils/apiClient';
 import { toolboxWithExportLog } from '@/utils/chartToolbox';
 import WordCloudChart from './WordCloudChart.vue';
 import { Money, ShoppingCart, User, DataAnalysis, Refresh } from '@element-plus/icons-vue';
-import { getCategoryLabel, getLocationLabel, getGenderLabel, getSeasonLabel } from '@/utils/displayLabels';
+import { getCategoryLabel, getLocationLabel, getGenderLabel, getSeasonLabel, getItemPurchasedLabel } from '@/utils/displayLabels';
+
+// 交易记录表格数据
+const transactionTable = reactive({
+  data: [],
+  loading: false,
+  error: false,
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+});
+
+// 格式化日期
+const formatDate = (row, column, cellValue) => {
+  if (!cellValue) return '';
+  const date = new Date(cellValue);
+  return date.toISOString().split('T')[0];
+};
+
+// 格式化金额
+const formatAmount = (row, column, cellValue) => {
+  if (cellValue == null) return '0.00';
+  return Number(cellValue).toFixed(2);
+};
+
+// 加载交易记录数据
+const loadTransactionRecords = async () => {
+  transactionTable.loading = true;
+  transactionTable.error = false;
+
+  try {
+    const params = {
+      page: transactionTable.pageNum,
+      size: transactionTable.pageSize
+    };
+
+    const res = await apiClient.get('/api/shopping-records', { params });
+    const pageResult = res?.data ?? res ?? {};
+
+    transactionTable.data = pageResult.list || pageResult.records || [];
+    transactionTable.total = pageResult.total || 0;
+    transactionTable.pageNum = pageResult.pageNum || pageResult.current || 1;
+  } catch (error) {
+    console.error('加载交易记录失败:', error);
+    transactionTable.error = true;
+  } finally {
+    transactionTable.loading = false;
+  }
+};
+
+// 分页大小变化
+const handleSizeChange = (size) => {
+  transactionTable.pageSize = size;
+  transactionTable.pageNum = 1;
+  loadTransactionRecords();
+};
+
+// 页码变化
+const handlePageChange = (page) => {
+  transactionTable.pageNum = page;
+  loadTransactionRecords();
+};
 
 // 统计数据
 const totalSales = ref(0);
@@ -347,6 +476,7 @@ onMounted(() => {
   charts.forEach((_, index) => {
     loadChartData(index);
   });
+  loadTransactionRecords();
 });
 
 // 组件卸载前清理图表实例
@@ -439,6 +569,23 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
+/* 交易记录表格样式 */
+.table-card {
+  margin-bottom: 20px;
+}
+
+.table-container {
+  min-height: 400px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #ebeef5;
+}
+
 @media (max-width: 768px) {
   .card-header {
     flex-direction: column;
@@ -451,6 +598,10 @@ onBeforeUnmount(() => {
   
   .chart-container {
     height: 300px;
+  }
+  
+  .pagination-container {
+    justify-content: center;
   }
 }
 </style>

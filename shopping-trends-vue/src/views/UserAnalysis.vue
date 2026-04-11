@@ -14,11 +14,11 @@
     <el-progress type="circle" :percentage="50" :show-text="false" />
   </div>
   <div class="user-analysis-container">
-    <!-- 用户统计卡片 -->
+    <!-- 客户统计卡片 -->
     <el-row :gutter="20" class="stat-row" justify="center">
       <el-col :xs="24" :sm="12" :md="6">
         <el-card shadow="hover" class="stat-card">
-          <el-statistic title="活跃用户数" :value="userStats.activeUsers">
+          <el-statistic title="活跃客户数" :value="customerStats.activeUsers">
             <template #prefix>
               <el-icon><el-icon-user /></el-icon>
             </template>
@@ -27,7 +27,7 @@
       </el-col>
       <el-col :xs="24" :sm="12" :md="6">
         <el-card shadow="hover" class="stat-card">
-          <el-statistic title="平均购买频率" :value="userStats.avgFrequency" :precision="2">
+          <el-statistic title="平均购买频率" :value="customerStats.avgFrequency" :precision="2">
             <template #suffix>
               <span>次/月</span>
             </template>
@@ -38,12 +38,12 @@
 
     <!-- 图表区域 -->
     <el-row :gutter="20" class="chart-row">
-      <!-- 用户年龄分布 -->
+      <!-- 客户年龄分布 -->
       <el-col :xs="24" :sm="24" :md="12">
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>用户年龄分布</h3>
+              <h3>客户年龄分布</h3>
               <el-button v-if="charts.ageDistribution.loading" :loading="true" circle></el-button>
               <el-button v-else type="primary" size="small" circle @click="refreshChart('ageDistribution')">
                 <el-icon><el-icon-refresh /></el-icon>
@@ -61,12 +61,12 @@
         </el-card>
       </el-col>
 
-      <!-- 用户性别分布 -->
+      <!-- 客户性别分布 -->
       <el-col :xs="24" :sm="24" :md="12">
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>用户性别分布</h3>
+              <h3>客户性别分布</h3>
               <el-button v-if="charts.genderDistribution.loading" :loading="true" circle></el-button>
               <el-button v-else type="primary" size="small" circle @click="refreshChart('genderDistribution')">
                 <el-icon><el-icon-refresh /></el-icon>
@@ -86,12 +86,12 @@
     </el-row>
 
     <el-row :gutter="20" class="chart-row">
-      <!-- 用户购买频率 -->
+      <!-- 客户购买频率 -->
       <el-col :xs="24" :sm="24" :md="12">
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>用户购买频率分布</h3>
+              <h3>客户购买频率分布</h3>
               <el-button v-if="charts.frequencyDistribution.loading" :loading="true" circle></el-button>
               <el-button v-else type="primary" size="small" circle @click="refreshChart('frequencyDistribution')">
                 <el-icon><el-icon-refresh /></el-icon>
@@ -109,12 +109,12 @@
         </el-card>
       </el-col>
 
-      <!-- 用户地区分布 -->
+      <!-- 客户地区分布 -->
       <el-col :xs="24" :sm="24" :md="12">
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>用户地区分布</h3>
+              <h3>客户地区分布</h3>
               <el-button v-if="charts.locationDistribution.loading" :loading="true" circle></el-button>
               <el-button v-else type="primary" size="small" circle @click="refreshChart('locationDistribution')">
                 <el-icon><el-icon-refresh /></el-icon>
@@ -133,13 +133,13 @@
       </el-col>
     </el-row>
 
-    <!-- 用户购买趋势 -->
+    <!-- 客户购买趋势 -->
     <el-row :gutter="20" class="chart-row">
       <el-col :span="24">
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>用户购买趋势</h3>
+              <h3>客户购买趋势</h3>
               <el-button v-if="charts.purchaseTrend.loading" :loading="true" circle></el-button>
               <el-button v-else type="primary" size="small" circle @click="refreshChart('purchaseTrend')">
                 <el-icon><el-icon-refresh /></el-icon>
@@ -182,9 +182,9 @@ const filters = reactive({
 });
 const locationOptions = ref([]);
 
-// 数据缓存
+// 数据缓存（客户分析汇总与各分布）
 const dataCache = reactive({
-  userStats: null,
+  customerStats: null,
   ageDistribution: null,
   genderDistribution: null,
   frequencyDistribution: null,
@@ -192,8 +192,8 @@ const dataCache = reactive({
   purchaseTrend: null
 });
 
-// 用户统计数据
-const userStats = reactive({
+// 客户顶部统计卡片数据（活跃客户数、平均购买频率等）
+const customerStats = reactive({
   activeUsers: 0,
   avgFrequency: 0,
   avgOrderValue: 0,
@@ -244,8 +244,8 @@ const fetchLocationOptions = async () => {
   }
 };
 
-// 加载用户统计数据
-const loadUserStats = async () => {
+// 加载客户分析汇总（接口路径仍为 user-summary，与后端一致）
+const loadCustomerStats = async () => {
   try {
     globalLoading.value = true;
     globalError.value = null;
@@ -264,8 +264,8 @@ const loadUserStats = async () => {
     
     // 检查缓存
     const cacheKey = JSON.stringify(params);
-    if (dataCache.userStats && dataCache.userStats.key === cacheKey) {
-      Object.assign(userStats, dataCache.userStats.data);
+    if (dataCache.customerStats && dataCache.customerStats.key === cacheKey) {
+      Object.assign(customerStats, dataCache.customerStats.data);
       return;
     }
     
@@ -276,9 +276,9 @@ const loadUserStats = async () => {
       throw new Error('Invalid response data structure');
     }
 
-    // 更新顶部统计卡片数据
-    userStats.activeUsers  = Number(payload.activeUserCount)     || 0;
-    userStats.avgFrequency = Number(payload.avgPurchaseFrequency) || 0;
+    // 更新顶部统计卡片数据（后端字段 activeUserCount 表示去重客户数）
+    customerStats.activeUsers  = Number(payload.activeUserCount)     || 0;
+    customerStats.avgFrequency = Number(payload.avgPurchaseFrequency) || 0;
 
     // 缓存分布数据，供各图表加载函数复用，避免重复请求
     dataCache.ageDistribution      = payload.ageGroupDistribution;
@@ -286,13 +286,13 @@ const loadUserStats = async () => {
     dataCache.locationDistribution = payload.locationDistribution;
     
     // 更新缓存
-    dataCache.userStats = {
+    dataCache.customerStats = {
       key: cacheKey,
-      data: {...userStats}
+      data: {...customerStats}
     };
   } catch (error) {
-    console.error('加载用户统计数据失败:', error);
-    globalError.value = '加载用户统计数据失败，请稍后重试';
+    console.error('加载客户统计数据失败:', error);
+    globalError.value = '加载客户统计数据失败，请稍后重试';
   } finally {
     globalLoading.value = false;
   }
@@ -356,9 +356,9 @@ const loadAgeDistribution = async () => {
     if (filters.gender) params.gender = filters.gender;
     if (filters.location) params.location = filters.location;
     
-    // 如果缓存中没有数据，重新加载用户统计数据
+    // 如果缓存中没有数据，重新拉取客户汇总
     if (!dataCache.ageDistribution) {
-      await loadUserStats();
+      await loadCustomerStats();
       if (!dataCache.ageDistribution) {
         throw new Error('年龄分布数据不可用');
       }
@@ -373,7 +373,7 @@ const loadAgeDistribution = async () => {
     
     const option = {
       title: {
-        text: '用户年龄分布',
+        text: '客户年龄分布',
         left: 'center',
         subtext: '按年龄段统计',
         subtextStyle: {
@@ -386,7 +386,7 @@ const loadAgeDistribution = async () => {
           const data = params[0];
           return `
             <div style="font-weight:bold">${data.name}</div>
-            <div>用户数: ${data.value}人</div>
+            <div>客户数: ${data.value}人</div>
           `;
         }
       },
@@ -407,12 +407,12 @@ const loadAgeDistribution = async () => {
       },
       yAxis: {
         type: 'value',
-        name: '用户数',
+        name: '客户数',
         minInterval: 1
       },
       series: [
         {
-          name: '用户数',
+          name: '客户数',
           type: 'bar',
           barWidth: '40%',
           data: ageData.map(item => item.count),
@@ -457,9 +457,9 @@ const loadGenderDistribution = async () => {
     if (filters.ageGroup) params.age_group = filters.ageGroup;
     if (filters.location) params.location = filters.location;
     
-    // 如果缓存中没有数据，重新加载用户统计数据
+    // 如果缓存中没有数据，重新加载客户统计数据
     if (!dataCache.genderDistribution) {
-      await loadUserStats();
+      await loadCustomerStats();
       if (!dataCache.genderDistribution) {
         throw new Error('性别分布数据不可用');
       }
@@ -473,7 +473,7 @@ const loadGenderDistribution = async () => {
     
     const option = {
       title: {
-        text: '用户性别分布',
+        text: '客户性别分布',
         left: 'center',
         subtext: '按性别统计',
         subtextStyle: {
@@ -485,7 +485,7 @@ const loadGenderDistribution = async () => {
         formatter: (params) => {
           return `
             <div style="font-weight:bold">${params.name}</div>
-            <div>用户数: ${params.value}人</div>
+            <div>客户数: ${params.value}人</div>
             <div>占比: ${params.percent}%</div>
           `;
         }
@@ -498,7 +498,7 @@ const loadGenderDistribution = async () => {
       },
       series: [
         {
-          name: '用户性别',
+          name: '客户性别',
           type: 'pie',
           radius: ['40%', '70%'],
           avoidLabelOverlap: false,
@@ -573,7 +573,7 @@ const loadFrequencyDistribution = async () => {
     
     const option = {
       title: {
-        text: '用户购买频率分布',
+        text: '客户购买频率分布',
         left: 'center'
       },
       tooltip: {
@@ -639,7 +639,7 @@ const loadLocationDistribution = async () => {
     
     const option = {
       title: {
-        text: '用户地区分布',
+        text: '客户地区分布',
         left: 'center',
         subtext: '按购买次数统计',
         subtextStyle: { fontSize: 14 }
@@ -729,7 +729,7 @@ const loadPurchaseTrend = async () => {
 
     const option = {
       title: {
-        text: '用户购买趋势',
+        text: '客户购买趋势',
         left: 'center'
       },
       tooltip: {
@@ -802,13 +802,13 @@ const refreshChart = (chartName) => {
 
 // 日期范围变化处理
 const handleDateChange = () => {
-  loadUserStats();
+  loadCustomerStats();
   loadAllCharts();
 };
 
 // 应用筛选
 const applyFilters = () => {
-  loadUserStats();
+  loadCustomerStats();
   loadAllCharts();
 };
 
@@ -825,7 +825,7 @@ const loadAllCharts = () => {
 onMounted(async () => {
   try {
     await fetchLocationOptions();
-    await loadUserStats();
+    await loadCustomerStats();
     initCharts();
     loadAllCharts();
   } catch (error) {
